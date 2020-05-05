@@ -1,9 +1,13 @@
 #include <iostream>
+
 #include <sstream>
 #include <fstream>
-#include <math.h>
+
 #include <vector>
+#include <list>
+
 #include <limits>
+#include <math.h>
 
 using namespace std;
 
@@ -21,7 +25,7 @@ class Node{
 	float g; //Cost of taking this node as route to end 
 	
 	bool isWall; //Is the node a wall
-	bool isVisited; //Has the node been visisted
+	bool visited; //Has the node been visisted
 	
 	vector<Node*> neighbors; //vector to store the neighbors 
 	
@@ -81,7 +85,7 @@ int main(){
 			maze[x][y]->g = std::numeric_limits<float>::infinity();
 			
 			maze[x][y]->isWall = isWall; //Is the noe a wall
-			maze[x][y]->isVisited = false; //The node has not been visited yet
+			maze[x][y]->visited = false; //The node has not been visited yet
 			
 			//Node does not currently have a previousNode
 			maze[x][y]->previousNode = nullptr;
@@ -111,4 +115,12 @@ int main(){
 	
 	startNode->f = 0.0; //Total path cost so far is 0
 	startNode->g = distance(startNode->x, startNode->y, endNode->x, endNode->y); //Minimum possible distance between the startNode and the endNode
+
+	list<Node*> openSet;
+	openSet.push_back(startNode);
+	
+	//A* goes here
+	while(!openSet.empty()){
+		
+	}
 }
