@@ -1,26 +1,31 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <math.h>
 #include <vector>
 #include <limits>
 
 using namespace std;
 
+float distance(float x1, float y1, float x2, float y2){
+	return sqrt((x1-x2) * (x1-x2) + (y1 - y2) * (y1 - y2));
+}
+
 class Node{
 	public:
+	//Node's position on the map
 	int x;
 	int y;
 	
-	float f;
-	float g;
+	float f; //Total path cost so far
+	float g; //Cost of taking this node as route to end 
 	
-	bool isWall;
-	bool isVisited;
+	bool isWall; //Is the node a wall
+	bool isVisited; //Has the node been visisted
 	
-	vector<Node> neighbours;
+	vector<Node*> neighbors; //vector to store the neighbors 
 	
-	Node* previousNode;
-	
+	Node* previousNode = nullptr; //stores the previous node to track the route through the maze
 };
 
 int main(){
@@ -71,18 +76,39 @@ int main(){
 			maze[x][y]->x = x;
 			maze[x][y]->y = y;
 			
-			//To start f and g are infinity
+			//To start f and g are infinity as when f and g are calculated they are going to be less than infinity so they replace these values
 			maze[x][y]->f = std::numeric_limits<float>::infinity(); 
 			maze[x][y]->g = std::numeric_limits<float>::infinity();
 			
-			maze[x][y]->isWall = isWall;
-			maze[x][y]->isVisited = false;
+			maze[x][y]->isWall = isWall; //Is the noe a wall
+			maze[x][y]->isVisited = false; //The node has not been visited yet
 			
 			//Node does not currently have a previousNode
 			maze[x][y]->previousNode = nullptr;
 		}
 	}
 	
+	//Setup node neighbours that are not walls		
+	for(int x = 0; x < cols; x++){
+		for(int y = 0; y < rows; y++){
+			if(x > 0 && !maze[x][y]->isWall){
+				maze[x][y]->neighbors.push_back(maze[y][x - 1]);
+			}
+			if( x < (cols - 1) && !maze[x][y]->isWall){
+				maze[x][y]->neighbors.push_back(maze[y][x + 1]);
+			}
+			if(y > 0 && !maze[x][y]->isWall){
+				maze[x][y]->neighbors.push_back(maze[y - 1][x]);
+			}
+			if( y < (rows - 1) && !maze[x][y]->isWall){
+				maze[x][y]->neighbors.push_back(maze[y + 1][x]);
+			}
+		}
+	}
+	
 	Node* startNode = maze[startX][startY];
 	Node* endNode = maze[endX][endY];
+	
+	startNode->f = 0.0; //Total path cost so far is 0
+	startNode->g = distance(startNode->x, startNode->y, endNode->x, endNode->y); //Minimum possible distance between the startNode and the endNode
 }
