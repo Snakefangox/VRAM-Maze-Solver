@@ -36,7 +36,7 @@ int main(){
 	//Open the text files
 	ifstream mazeInfo("maze_prop.txt");
 	ifstream mazeInput("maze.txt");
-	ofstream mazeOutput("solved_maze.txt");
+	ofstream mazeOutput("solved_maze.txt", ios::out | ios::trunc);
 	
 	string line;
 	string mazeInfoString = "";
@@ -117,10 +117,29 @@ int main(){
 	startNode->g = distance(startNode->x, startNode->y, endNode->x, endNode->y); //Minimum possible distance between the startNode and the endNode
 
 	list<Node*> openSet;
-	openSet.push_back(startNode);
+	openSet.push_back(startNode); //Only the startNode is being evaluated so far
 	
 	//A* goes here
+	bool pathFound = false; //NOTE FOR PROGRAMMING A*: Make pathFound true when a path has been found but do not break the loop as there still might be a better path
 	while(!openSet.empty()){
-		
+
+	}
+	
+	vector<Node*> path;
+	Node* currentPathNode = endNode;
+	if(pathFound){ //If there is a path recostruct the path
+		while(currentPathNode != startNode){ //While the currentNode is not the startNode (therefore the path is complete
+			path.push_back(currentPathNode); //Add the current node to the path
+			currentPathNode = currentPathNode->previousNode; //Get the previous node the the current node and set it as currentNode
+		}
+	}
+	
+	if(!path.empty()){ //Check if the path is empty (empty means there is no path)
+		for(auto &node : path){ //Loop through the path
+			mazeOutput << std::to_string(node->x) + ", " + std::to_string(node->y) + " \n"; //Output the x, y point of the node input mazeOutput file 
+		}
+	}
+	else{ 
+		mazeOutput << "There is no path through the maze";
 	}
 }
