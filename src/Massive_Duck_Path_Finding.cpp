@@ -37,7 +37,7 @@ int main(){
 	//Open the text files
 	ifstream mazeInfo("maze_prop.txt");
 	ifstream mazeInput("maze.txt");
-	ofstream mazeOutput("solved_maze.txt", ios::out | ios::trunc);
+	ofstream mazeOutput("out.txt", ios::out | ios::trunc);
 	
 	string line;
 	string mazeInfoString = "";
@@ -160,12 +160,12 @@ int main(){
 	vector<Node*> path;
 	Node* currentPathNode = endNode;
 	if(pathFound){ //If there is a path recostruct the path
-		while(currentPathNode != startNode){ //While the currentNode is not the startNode (therefore the path is complete
+		while(currentPathNode != startNode){ //While the currentNode is not the startNode (therefore the path is complete)
 			path.push_back(currentPathNode); //Add the current node to the path
 			currentPathNode = currentPathNode->previousNode; //Get the previous node the the current node and set it as currentNode
 		}
 	}
-	std::reverse(path.begin(), path.end());
+	std::reverse(path.begin(), path.end()); //The path was 
 	
 	if(!path.empty()){ //Check if the path is empty (empty means there is no path)
 		for(auto node : path){ //Loop through the path
