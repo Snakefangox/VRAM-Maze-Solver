@@ -3,6 +3,7 @@
 #include <sstream>
 #include <fstream>
 
+#include <algorithm>
 #include <vector>
 #include <list>
 
@@ -21,8 +22,8 @@ class Node{
 	int x;
 	int y;
 	
-	float f; //Total path cost so far
-	float g; //Cost of taking this node as route to end 
+	float fCost; //Total path cost so far
+	float gCost; //Cost of taking this node as route to end 
 	
 	bool isWall; //Is the node a wall
 	bool visited; //Has the node been visisted
@@ -81,8 +82,8 @@ int main(){
 			maze[x][y]->y = y;
 			
 			//To start f and g are infinity as when f and g are calculated they are going to be less than infinity so they replace these values
-			maze[x][y]->f = std::numeric_limits<float>::infinity(); 
-			maze[x][y]->g = std::numeric_limits<float>::infinity();
+			maze[x][y]->fCost = std::numeric_limits<float>::infinity(); 
+			maze[x][y]->gCost = std::numeric_limits<float>::infinity();
 			
 			maze[x][y]->isWall = isWall; //Is the noe a wall
 			maze[x][y]->visited = false; //The node has not been visited yet
@@ -96,16 +97,16 @@ int main(){
 	for(int x = 0; x < cols; x++){
 		for(int y = 0; y < rows; y++){
 			if(x > 0 && !maze[x][y]->isWall){
-				maze[x][y]->neighbors.push_back(maze[y][x - 1]);
+				maze[x][y]->neighbors.push_back(maze[x - 1][y]);
 			}
 			if( x < (cols - 1) && !maze[x][y]->isWall){
-				maze[x][y]->neighbors.push_back(maze[y][x + 1]);
+				maze[x][y]->neighbors.push_back(maze[x + 1][y]);
 			}
 			if(y > 0 && !maze[x][y]->isWall){
-				maze[x][y]->neighbors.push_back(maze[y - 1][x]);
+				maze[x][y]->neighbors.push_back(maze[x][y - 1]);
 			}
 			if( y < (rows - 1) && !maze[x][y]->isWall){
-				maze[x][y]->neighbors.push_back(maze[y + 1][x]);
+				maze[x][y]->neighbors.push_back(maze[x][y + 1]);
 			}
 		}
 	}
@@ -113,16 +114,47 @@ int main(){
 	Node* startNode = maze[startX][startY];
 	Node* endNode = maze[endX][endY];
 	
-	startNode->f = 0.0; //Total path cost so far is 0
-	startNode->g = distance(startNode->x, startNode->y, endNode->x, endNode->y); //Minimum possible distance between the startNode and the endNode
+	startNode->fCost = 0.0; //Total path cost so far is 0
+	startNode->gCost = distance(startNode->x, startNode->y, endNode->x, endNode->y); //Minimum possible distance between the startNode and the endNode
+
 
 	list<Node*> openSet;
 	openSet.push_back(startNode); //Only the startNode is being evaluated so far
-	
-	//A* goes here
-	bool pathFound = false; //NOTE FOR PROGRAMMING A*: Make pathFound true when a path has been found but do not break the loop as there still might be a better path
-	while(!openSet.empty()){
+	Node* currentNode = startNode;
 
+	bool pathFound = false; 
+	while(!openSet.empty() && currentNode != endNode){ //A* based off of OneLoneCoder's A* algorithm
+		openSet.sort([](const Node* nodeOne, const Node* nodeTwo) { return nodeOne->fCost < nodeTwo->fCost; }); //Sort the open set by lowest f score
+		
+		while(!openSet.empty() && openSet.front()->visited){ //If the node is visited remove it from the open set
+			openSet.pop_front();
+		}
+		
+		if(openSet.empty()){ //If the open set is empty, there are no more nodes to look through
+			break;
+		}
+		
+		currentNode = openSet.front(); //Select the top node from the open set (node with the lowest f cost
+		currentNode->visited = true; //Set that node to be visited
+		
+		if(currentNode == endNode){ //Check if the currentNode is the endNode, if it is a path has been fast, the loop does not break here as there may be a better path still
+			pathFound = true;
+		}
+		
+		for(auto nodeNeighbor : currentNode->neighbors){ //Loop through all neighbors
+			if(!nodeNeighbor->visited){ //If this neighbor is unvisited, add it to the openSet to be searched 
+				openSet.push_back(nodeNeighbor);
+			}
+			
+			float gCostNeighbor = currentNode->fCost + distance(currentNode->x, currentNode->y, nodeNeighbor->x, nodeNeighbor->y); //Calculate the g cost of going to this node
+			
+			if(gCostNeighbor < nodeNeighbor->gCost){ //Check if the g cost of this neighbour is lower than the already exisiting g cost of the neighbor
+				nodeNeighbor->previousNode = currentNode; //Set the previous node of the neighbor to the current node
+				nodeNeighbor->gCost = gCostNeighbor; //Update the g cost of this node
+				
+				nodeNeighbor->fCost = nodeNeighbor->gCost + distance(nodeNeighbor->x, nodeNeighbor->y, endNode->x, endNode->y); //Update the total f cost so far
+			}
+		}
 	}
 	
 	vector<Node*> path;
@@ -133,9 +165,10 @@ int main(){
 			currentPathNode = currentPathNode->previousNode; //Get the previous node the the current node and set it as currentNode
 		}
 	}
+	std::reverse(path.begin(), path.end());
 	
 	if(!path.empty()){ //Check if the path is empty (empty means there is no path)
-		for(auto &node : path){ //Loop through the path
+		for(auto node : path){ //Loop through the path
 			mazeOutput << std::to_string(node->x) + ", " + std::to_string(node->y) + " \n"; //Output the x, y point of the node input mazeOutput file 
 		}
 	}
