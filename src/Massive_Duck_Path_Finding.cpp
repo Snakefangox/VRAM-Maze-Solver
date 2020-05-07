@@ -10,6 +10,8 @@
 #include <limits>
 #include <math.h>
 
+#include<graphics.h>
+
 using namespace std;
 
 float distance(float x1, float y1, float x2, float y2){
@@ -93,30 +95,11 @@ int main(){
 		}
 	}
 	
-	//Setup node neighbours that are not walls		
-	for(int x = 0; x < cols; x++){
-		for(int y = 0; y < rows; y++){
-			if(x > 0 && !maze[x][y]->isWall){
-				maze[x][y]->neighbors.push_back(maze[x - 1][y]);
-			}
-			if( x < (cols - 1) && !maze[x][y]->isWall){
-				maze[x][y]->neighbors.push_back(maze[x + 1][y]);
-			}
-			if(y > 0 && !maze[x][y]->isWall){
-				maze[x][y]->neighbors.push_back(maze[x][y - 1]);
-			}
-			if( y < (rows - 1) && !maze[x][y]->isWall){
-				maze[x][y]->neighbors.push_back(maze[x][y + 1]);
-			}
-		}
-	}
-	
 	Node* startNode = maze[startX][startY];
 	Node* endNode = maze[endX][endY];
 	
 	startNode->fCost = 0.0; //Total path cost so far is 0
 	startNode->gCost = distance(startNode->x, startNode->y, endNode->x, endNode->y); //Minimum possible distance between the startNode and the endNode
-
 
 	list<Node*> openSet;
 	openSet.push_back(startNode); //Only the startNode is being evaluated so far
@@ -139,6 +122,28 @@ int main(){
 		
 		if(currentNode == endNode){ //Check if the currentNode is the endNode, if it is a path has been fast, the loop does not break here as there may be a better path still
 			pathFound = true;
+		}
+		
+		//Only calculate the neighbors of a node(not a wall) if it is required , making the program more efficient
+		if(currentNode->x > 0){
+			if(!maze[currentNode->x - 1][currentNode->y]->isWall){
+				currentNode->neighbors.push_back(maze[currentNode->x - 1][currentNode->y]);
+			}
+		}
+		if(currentNode->x < (cols - 1)){
+			if(!maze[currentNode->x + 1][currentNode->y]->isWall){
+				currentNode->neighbors.push_back(maze[currentNode->x + 1][currentNode->y]);
+			}
+		}
+		if(currentNode->y > 0){
+			if(!maze[currentNode->x][currentNode->y - 1]->isWall){
+				currentNode->neighbors.push_back(maze[currentNode->x][currentNode->y - 1]);
+			}
+		}
+		if(currentNode->y < (rows - 1)){
+			if(!maze[currentNode->x][currentNode->y + 1]->isWall){
+				currentNode->neighbors.push_back(maze[currentNode->x][currentNode->y + 1]);
+			}
 		}
 		
 		for(auto nodeNeighbor : currentNode->neighbors){ //Loop through all neighbors
