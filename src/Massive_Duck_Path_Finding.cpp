@@ -10,13 +10,7 @@
 #include <limits>
 #include <math.h>
 
-#include<graphics.h>
-
 using namespace std;
-
-float distance(float x1, float y1, float x2, float y2){
-	return sqrt((x1-x2) * (x1-x2) + (y1 - y2) * (y1 - y2));
-}
 
 class Node{
 	public:
@@ -34,6 +28,10 @@ class Node{
 	
 	Node* previousNode = nullptr; //stores the previous node to track the route through the maze
 };
+
+float distance(Node* nodeOne, Node* nodeTwo){
+	return abs((nodeOne->x - nodeTwo->x)) + abs((nodeOne->y - nodeTwo->y)); //Manhattan distance hueristic, most effient hueristic for grids with 4 directions of movement 
+}
 
 int main(){
 	//Open the text files
@@ -99,13 +97,14 @@ int main(){
 	Node* endNode = maze[endX][endY];
 	
 	startNode->fCost = 0.0; //Total path cost so far is 0
-	startNode->gCost = distance(startNode->x, startNode->y, endNode->x, endNode->y); //Minimum possible distance between the startNode and the endNode
+	startNode->gCost = distance(startNode, endNode); //Minimum possible distance between the startNode and the endNode
 
 	list<Node*> openSet;
 	openSet.push_back(startNode); //Only the startNode is being evaluated so far
 	Node* currentNode = startNode;
 
 	bool pathFound = false; 
+	int numOfNodes = 0;
 	while(!openSet.empty() && currentNode != endNode){ //A* based off of OneLoneCoder's A* algorithm
 		openSet.sort([](const Node* nodeOne, const Node* nodeTwo) { return nodeOne->fCost < nodeTwo->fCost; }); //Sort the open set by lowest f score
 		
@@ -119,7 +118,7 @@ int main(){
 		
 		currentNode = openSet.front(); //Select the top node from the open set (node with the lowest f cost
 		currentNode->visited = true; //Set that node to be visited
-		
+		numOfNodes++;
 		if(currentNode == endNode){ //Check if the currentNode is the endNode, if it is a path has been fast, the loop does not break here as there may be a better path still
 			pathFound = true;
 		}
@@ -151,24 +150,29 @@ int main(){
 				openSet.push_back(nodeNeighbor);
 			}
 			
-			float gCostNeighbor = currentNode->fCost + distance(currentNode->x, currentNode->y, nodeNeighbor->x, nodeNeighbor->y); //Calculate the g cost of going to this node
+			float gCostNeighbor = currentNode->fCost + distance(currentNode, nodeNeighbor); //Calculate the g cost of going to this node
 			
 			if(gCostNeighbor < nodeNeighbor->gCost){ //Check if the g cost of this neighbour is lower than the already exisiting g cost of the neighbor
 				nodeNeighbor->previousNode = currentNode; //Set the previous node of the neighbor to the current node
 				nodeNeighbor->gCost = gCostNeighbor; //Update the g cost of this node
 				
-				nodeNeighbor->fCost = nodeNeighbor->gCost + distance(nodeNeighbor->x, nodeNeighbor->y, endNode->x, endNode->y); //Update the total f cost so far
+				nodeNeighbor->fCost = nodeNeighbor->gCost + distance(nodeNeighbor, endNode); //Update the total f cost so far
 			}
 		}
 	}
 	
+	
+	
 	vector<Node*> path;
 	Node* currentPathNode = endNode;
+	int nodeDist = 0;
 	if(pathFound){ //If there is a path recostruct the path
 		while(currentPathNode != startNode){ //While the currentNode is not the startNode (therefore the path is complete)
 			path.push_back(currentPathNode); //Add the current node to the path
 			currentPathNode = currentPathNode->previousNode; //Get the previous node the the current node and set it as currentNode
+			nodeDist++;
 		}
+		cout << "There were " << rows*cols << " nodes, optimal solution found by searching " << numOfNodes << " nodes with a distance of " << nodeDist << endl;
 	}
 	std::reverse(path.begin(), path.end()); //The path was 
 	
@@ -178,6 +182,7 @@ int main(){
 		}
 	}
 	else{ 
+		cout << "All nodes were searched and no path was found" << endl;
 		mazeOutput << "There is no path through the maze";
 	}
 }
