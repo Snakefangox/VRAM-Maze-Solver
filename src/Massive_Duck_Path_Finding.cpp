@@ -119,7 +119,7 @@ int main(){
 		currentNode = openSet.front(); //Select the top node from the open set (node with the lowest f cost
 		currentNode->visited = true; //Set that node to be visited
 		numOfNodes++;
-		if(currentNode == endNode){ //Check if the currentNode is the endNode, if it is a path has been fast, the loop does not break here as there may be a better path still
+		if(currentNode == endNode){ //Check if the currentNode is the endNode, if it is a path has been found, the loop does not break here as there may be a better path still
 			pathFound = true;
 		}
 		
@@ -162,10 +162,9 @@ int main(){
 	}
 	
 	
-	
+	int nodeDist = 0; //Total nodes covered with path
 	vector<Node*> path;
 	Node* currentPathNode = endNode;
-	int nodeDist = 0;
 	if(pathFound){ //If there is a path recostruct the path
 		while(currentPathNode != startNode){ //While the currentNode is not the startNode (therefore the path is complete)
 			path.push_back(currentPathNode); //Add the current node to the path
@@ -174,7 +173,7 @@ int main(){
 		}
 		cout << "There were " << rows*cols << " nodes, optimal solution found by searching " << numOfNodes << " nodes with a distance of " << nodeDist << endl;
 	}
-	std::reverse(path.begin(), path.end()); //The path was 
+	std::reverse(path.begin(), path.end()); //Reverse the path so path starts from the startNode
 	
 	if(!path.empty()){ //Check if the path is empty (empty means there is no path)
 		for(auto node : path){ //Loop through the path
